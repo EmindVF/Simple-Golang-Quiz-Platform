@@ -1,0 +1,8 @@
+{{template "base-top" .}}
+<h1>Actions list</h1>
+{{range .actions}}
+<p>
+    {{.ActionDescription}} - UserId {{ .UserId }} - {{.ActionTime | formatDate }}
+<p>
+{{end}}
+{{template "base-bottom" .}}

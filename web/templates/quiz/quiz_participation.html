@@ -1,0 +1,113 @@
+{{template "base-top" .}}
+<h1>Participate in Quiz</h1>
+<style>
+  .section {
+    display: block;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #664343;
+    color: #FFF3D4;
+    text-align: center;
+    width: 50%;
+  }
+  .question {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #FFF3D4;
+    color: #664343;
+  }
+  .choices {
+    margin-top: 10px;
+  }
+  .choice {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+  .choice label {
+    margin-left: 5px;
+  }
+  input[type="radio"], input[type="text"] {
+    margin-right: 10px;
+  }
+  button {
+    margin-top: 20px;
+    background-color: #FFF3D4;
+    color: #664343;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #F3E2B8;
+  }
+</style>
+
+<div class="section">
+  <h2>{{.quiz.Title}}</h2>
+  <p>{{.quiz.Description}}</p>
+</div>
+
+<form id="participationForm" class="section">
+  <div id="questions">
+    {{range .quiz.Questions}}
+    <div class="question" id="question-{{.Id}}">
+      <p><strong>{{.Text}}</strong></p>
+      {{if eq .Type "choice"}}
+        <div class="choices">
+          {{range .Choices}}
+          <div class="choice">
+            <!-- Correctly scope the question ID using only {{.Id}} -->
+            <input type="radio" name="answers[{{.QuestionId}}]" value="{{.Id}}" id="choice-{{.Id}}" required>
+            <label for="choice-{{.Id}}">{{.Text}}</label>
+          </div>
+          {{end}}
+        </div>
+      {{else if eq .Type "text"}}
+        <textarea name="answers[{{.Id}}]" placeholder="Enter your answer..." rows="3" required></textarea>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+  <button type="submit">Submit Answers</button>
+</form>
+
+<script>
+  document.getElementById('participationForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const answers = {};
+
+    for (const [key, value] of formData.entries()) {
+      answers[key.replace('answers[', '').replace(']', '')] = value;
+    }
+
+    const jsonData = {
+      quiz_id: Number("{{.quiz.Id}}"),
+      answers: answers
+    };
+
+    const response = await fetch('/quiz/participate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonData)
+    });
+
+    console.log(JSON.stringify(jsonData))
+
+    if (response.ok) {
+      alert('Thank you for participating!');
+      window.location.href = '/quiz';
+    } else {
+      alert('Failed to submit answers. Please try again.');
+    }
+  });
+</script>
+{{template "base-bottom" .}}

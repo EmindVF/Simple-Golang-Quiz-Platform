@@ -1,0 +1,19 @@
+{{template "base-top" .}}
+<h1>Edit User</h1>
+<div class="container" style="text-align: left; width: 300px;">
+<form action="/users/{{.user.Id}}/edit" method="POST">
+    <label for="username"><b>Username:</b></label>
+    <input type="text" id="username" name="username" value="{{.user.UserName}}" required minlength="5" maxlength="100">
+    
+    <b>Roles:</b>
+    {{range .roles}}
+    <div>
+        <input type="checkbox" id="role_{{.Id}}" name="roles" value="{{.Id}}" {{if .Selected}} checked {{end}}>
+        <label for="role_{{.Id}}">{{.Name}}</label>
+    </div>
+    {{end}}
+
+    <button type="submit">Save Changes</button>
+</form>
+</div>
+{{template "base-bottom" .}}

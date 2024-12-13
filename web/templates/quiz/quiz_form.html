@@ -1,0 +1,248 @@
+{{template "base-top" .}}
+<h1>Create a New Quiz</h1>
+<style>
+  .bordero {
+    border: 2px solid #FFF3D4; 
+    border-radius: 15px;      
+    text-align: center;
+    padding: 10px;
+  }
+  .section {
+    display: inline-block;
+    width: 50%;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background-color: #664343;
+    color: #FFF3D4;
+  }
+  .question {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+  }
+  .question-type {
+    margin-top: 10px;
+  }
+  .choices {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .choice {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+  label {
+    font-weight: bold;
+  }
+  select, input[type="text"], textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  textarea {
+    resize: vertical;
+  }
+  .add-btn {
+    margin-top: 15px;
+    display: inline-block;
+    background-color: #FFF3D4;
+    color: #664343;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .add-btn:hover {
+    background-color: #F3E2B8;
+  }
+  button[type="button"] {
+    background-color: #FFF3D4;
+    color: #664343;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button[type="button"]:hover {
+    background-color: #F3E2B8;
+  }
+  button.remove-choice {
+    background-color: #FF6F61;
+    color: white;
+  }
+  button.remove-choice:hover {
+    background-color: #E65B50;
+  }
+  .right-answer {
+    display: none;
+  }
+
+  #quizForm {
+    width: 100%;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+</style>
+
+<form id="quizForm">
+  <div class="section">
+    <label for="title">Quiz Title:</label>
+    <input type="text" id="title" name="title" placeholder="Enter quiz title..." required>
+
+    <label for="description">Quiz Description:</label>
+    <textarea id="description" name="description" rows="4" placeholder="Enter quiz description..." required></textarea>
+
+    <label for="categories">Select Categories:</label>
+    <select id="categories" name="categories[]" multiple required>
+      {{range .categories}}
+      <option value={{.Id}}>{{.Name}}</option>
+      {{end}}
+    </select>
+  </div>
+
+  <div class="section">
+    <h3>Questions</h3>
+    <div id="questions">
+      <!-- Questions will be dynamically added here -->
+    </div>
+    <button type="button" class="add-btn" onclick="addQuestion()">Add Question</button>
+  </div>
+  
+  <button type="submit" class="section" style="background-color: #F3E2B8; color:#664343">Submit Quiz</button>
+</form>
+
+<script>
+  let questionCount = 0;
+
+  function addQuestion() {
+    const questionContainer = document.createElement('div');
+    questionContainer.classList.add('question');
+    questionContainer.id = `question-${questionCount}`;
+
+    questionContainer.innerHTML = `
+      <div class="bordero">
+        <label for="question-${questionCount}-text">Question Text:</label>
+        <input type="text" id="question-${questionCount}-text" name="questions[${questionCount}][text]" placeholder="Enter question text..." required>
+        
+        <label for="question-${questionCount}-type">Question Type:</label>
+        <select id="question-${questionCount}-type" name="questions[${questionCount}][type]" class="question-type" onchange="toggleQuestionOptions(${questionCount})" required>
+          <option value="choice">Choice</option>
+          <option value="text">Text</option>
+        </select>
+
+        <div id="choices-${questionCount}" class="choices">
+          <h4>Choices</h4>
+          <button type="button" class="add-btn" onclick="addChoice(${questionCount})">Add Choice</button>
+        </div>
+
+        <div id="right-answer-${questionCount}" class="right-answer">
+          <label for="question-${questionCount}-right">Correct Answer:</label>
+          <input type="text" id="question-${questionCount}-right" name="questions[${questionCount}][right_answer]" placeholder="Enter correct answer for text question...">
+        </div>
+      </div>
+    `;
+
+    document.getElementById('questions').appendChild(questionContainer);
+    toggleQuestionOptions(questionCount); 
+    questionCount++;
+  }
+
+  function addChoice(questionId) {
+    const choicesContainer = document.getElementById(`choices-${questionId}`);
+    const choiceCount = choicesContainer.querySelectorAll('.choice').length;
+
+    const choiceDiv = document.createElement('div');
+    choiceDiv.classList.add('choice');
+
+    choiceDiv.innerHTML = `
+      <input type="text" name="questions[${questionId}][choices][${choiceCount}][text]" placeholder="Enter choice text..." required>
+      <label>
+        <input type="radio" name="questions[${questionId}][correct]" value="${choiceCount}"> Correct
+      </label>
+      <button type="button" class="remove-choice" onclick="this.parentElement.remove()">Remove</button>
+    `;
+
+    choicesContainer.appendChild(choiceDiv);
+  }
+
+  function toggleQuestionOptions(questionId) {
+    const questionType = document.getElementById(`question-${questionId}-type`).value;
+    const choicesContainer = document.getElementById(`choices-${questionId}`);
+    const rightAnswerContainer = document.getElementById(`right-answer-${questionId}`);
+
+    if (questionType === 'text') {
+      choicesContainer.style.display = 'none';
+      rightAnswerContainer.style.display = 'block';
+    } else {
+      choicesContainer.style.display = 'block';
+      rightAnswerContainer.style.display = 'none';
+    }
+  }
+
+  document.getElementById('quizForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+    const categories = formData.getAll('categories[]');
+    const jsonData = {
+      title: formData.get('title'),
+      description: formData.get('description'),
+      categories: categories,
+      questions: []
+    };
+
+    for (let i = 0; i < questionCount; i++) {
+      const questionText = formData.get(`questions[${i}][text]`);
+      const questionType = formData.get(`questions[${i}][type]`);
+      const question = {
+        text: questionText,
+        type: questionType,
+        choices: []
+      };
+
+      if (questionType === 'choice') {
+        const choices = document.querySelectorAll(`#choices-${i} .choice`);
+        choices.forEach((choice, index) => {
+          const choiceText = choice.querySelector(`input[name="questions[${i}][choices][${index}][text]"]`).value;
+          const isCorrect = choice.querySelector(`input[name="questions[${i}][correct]"]`).checked;
+          question.choices.push({
+            text: choiceText,
+            is_correct: isCorrect
+          });
+        });
+      } else if (questionType === 'text') {
+        question.right_answer = formData.get(`questions[${i}][right_answer]`);
+      }
+
+      jsonData.questions.push(question);
+    }
+
+    const response = await fetch('/quiz/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonData)
+    });
+
+    console.log(JSON.stringify(jsonData))
+
+    if (response.ok) {
+      alert('Quiz created successfully!');
+      this.reset();
+      window.location.href = '/quiz';
+      document.getElementById('questions').innerHTML = '';
+      questionCount = 0;
+    } else {
+      alert('Failed to create quiz');
+    }
+  });
+</script>
+{{template "base-bottom" .}}

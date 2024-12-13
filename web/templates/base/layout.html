@@ -1,0 +1,64 @@
+{{ define "base-top"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Voprosnja</a></h1>
+        <nav>
+            <ul>
+                {{ if .authorized }}
+                    <li>Welcome {{ .username }}!</li>
+                    <li><a id="logout-link" href="/">Logout</a></li>
+                    <li><a href="/quiz">Quizzes</a></li>
+                {{ else }}
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/register">Register</a></li>
+                {{ end }}
+                
+                <li><a href="/news">News</a></li>
+
+                {{ if not (eq (bitwiseAnd .permissions 2) 0) }}
+                    <li><a href="/actions">User actions</a></li>
+                {{end}}
+
+                {{ if not (eq (bitwiseAnd .permissions 4) 0) }}
+                    <li><a href="/users">User management</a></li>
+                {{end}}
+            </ul>
+        </nav>
+    </header>
+    <script>
+        function clearCookies() {
+            document.cookie = 'authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+        window.onload = function() {
+            if (document.getElementById('logout-link')) {
+                document.getElementById('logout-link').addEventListener('click', function(event) {
+                    clearCookies();
+                });
+            }
+        };
+    </script>
+    <div style="height: 150px;">
+    </div>
+    <main>
+{{ end }}
+
+{{ define "base-bottom" }}
+    </main>
+    <div style="height: 150px;">
+    </div>
+    <footer>
+        <p>&copy; 2024 Voprosnja. No rights reserved actually.</p>
+    </footer>
+</body>
+</html>
+{{ end }}

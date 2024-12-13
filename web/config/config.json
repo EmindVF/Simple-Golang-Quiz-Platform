@@ -1,0 +1,21 @@
+{
+    "app" : {
+        "port":8080
+    },
+    "database" : {
+        "host" : "localhost",
+        "port": 5432,
+		"user" : "admin",
+		"password" : "password",
+		"dbname" : "database",
+		"sslmode" : "disable",
+		"timezone" : "UTC",
+        "init_script_path": "./scripts/sql/postgres_init.sql"
+    },
+    "token_info": {
+        "public_key_path" : "./keys/key.pub",
+        "private_key_path" : "./keys/key.priv",
+        "expires_in" : 360000,
+        "max_age" : 10000000
+    }
+}

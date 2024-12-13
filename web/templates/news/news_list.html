@@ -1,0 +1,15 @@
+{{template "base-top" .}}
+<h1>News List</h1>
+
+{{ if not (eq (bitwiseAnd .permissions 1) 0) }}
+<a href="/news/new">
+    <button>Create News</button>
+</a>
+{{end}}
+
+{{range .news}}
+<p>
+    <a href="/news/{{.Id}}">{{.Title}}</a> - {{.CreatedAt | formatDate }}
+<p>
+{{end}}
+{{template "base-bottom" .}}

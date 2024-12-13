@@ -1,0 +1,12 @@
+{{template "base-top" .}}
+<h1>{{if .news}}Edit News{{else}}Create News{{end}}</h1>
+<form method="post" action="{{.action}}">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" value="{{if .news}}{{.news.Title}}{{end}}" required>
+    <br>
+    <label for="news_text">Content:</label>
+    <textarea id="news_text" name="news_text" required>{{if .news}}{{.news.NewsText}}{{end}}</textarea>
+    <br>
+    <button type="submit">Submit</button>
+</form>
+{{template "base-bottom" .}}
